@@ -28,22 +28,23 @@ func init() {
 		panic(err)
 	}
 	pwd := filepath.Dir(ex)
-	log.Printf("[JIRA-VERSIONER] git directory: %s", pwd)
 
 	//rootCmd.Flags().StringP("verbose", "v", "info", "")
-	rootCmd.Flags().StringP("version", "", "", "release name, required, must be unique")
-	rootCmd.Flags().StringP("tag", "t", "", "release name, required, must be unique")
+	rootCmd.Flags().StringP("jira-version", "v", "", "Version name for Jira")
+	rootCmd.Flags().StringP("tag", "t", "", "Existing git tag")
 	rootCmd.Flags().StringP("jira-email", "e", "", "Jira email")
 	rootCmd.Flags().StringP("jira-token", "k", "", "Jira token/key")
-	rootCmd.Flags().StringP("jira-project", "p", "", "Jira project")
-	rootCmd.Flags().StringP("jira-base-url", "u", "", "Jira service base url")
-	rootCmd.Flags().StringP("dir", "d", pwd, "absolute directory path to git repository")
-	rootCmd.MarkFlagRequired("version")
+	rootCmd.Flags().StringP("jira-project", "p", "", "Jira project, it has to be ID, example: 10003")
+	rootCmd.Flags().StringP("jira-base-url", "u", "", "Jira service base url, example: https://example.atlassian.net")
+	rootCmd.Flags().StringP("dir", "d", pwd, "Absolute directory path to git repository")
+	rootCmd.MarkFlagRequired("jira-version")
 	rootCmd.MarkFlagRequired("tag")
 	rootCmd.MarkFlagRequired("jira-email")
 	rootCmd.MarkFlagRequired("jira-token")
 	rootCmd.MarkFlagRequired("jira-project")
 	rootCmd.MarkFlagRequired("jira-base-url")
+
+	rootCmd.Example = "jira-versioning -e jira@example.com -k SOME_TOKEN -p 10003 -v v1.1.0 -t v1.1.0 -u https://example.atlassian.net"
 }
 
 func main() {
@@ -51,13 +52,14 @@ func main() {
 }
 
 func rootFunc(c *cobra.Command, args []string) {
-	version := c.Flag("version").Value.String()
+	version := c.Flag("jira-version").Value.String()
 	tag := c.Flag("tag").Value.String()
 	jiraEmail := c.Flag("jira-email").Value.String()
 	jiraToken := c.Flag("jira-token").Value.String()
 	jiraProject := c.Flag("jira-project").Value.String()
 	jiraBaseUrl := c.Flag("jira-base-url").Value.String()
 	gitDir := c.Flag("dir").Value.String()
+	log.Printf("[JIRA-VERSIONER] git directory: %s", gitDir)
 
 	g := git.New(gitDir)
 
