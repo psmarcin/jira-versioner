@@ -24,44 +24,44 @@ func TestGitCommand_GetPreviousTag(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "should return v1.0.0",
-			fields:  fields{
+			name: "should return v1.0.0",
+			fields: fields{
 				PreviousTagGetter: func(name string, arg ...string) (string, error) {
 					return "v1.0.0", nil
 				},
-				CommitGetter:      nil,
+				CommitGetter: nil,
 			},
-			args:    args{
-				tag:           "v1.1.0",
+			args: args{
+				tag: "v1.1.0",
 			},
 			want:    "v1.0.0",
 			wantErr: false,
 		},
 		{
-			name:    "should return error",
-			fields:  fields{
+			name: "should return error",
+			fields: fields{
 				PreviousTagGetter: func(name string, arg ...string) (string, error) {
 					return "v1.0.0", errors.New("err 128")
 				},
-				CommitGetter:      nil,
+				CommitGetter: nil,
 			},
-			args:    args{
-				tag:           "v1.1.0",
+			args: args{
+				tag: "v1.1.0",
 			},
 			want:    "",
 			wantErr: true,
 		},
 		{
-			name:    "should trim whitespace in result",
-			fields:  fields{
+			name: "should trim whitespace in result",
+			fields: fields{
 				PreviousTagGetter: func(name string, arg ...string) (string, error) {
 					return `     v1.0.0
 `, nil
 				},
-				CommitGetter:      nil,
+				CommitGetter: nil,
 			},
-			args:    args{
-				tag:           "v1.1.0",
+			args: args{
+				tag: "v1.1.0",
 			},
 			want:    "v1.0.0",
 			wantErr: false,
@@ -73,7 +73,7 @@ func TestGitCommand_GetPreviousTag(t *testing.T) {
 				PreviousTagGetter: tt.fields.PreviousTagGetter,
 				CommitGetter:      tt.fields.CommitGetter,
 			}
-			got, err := c.GetPreviousTag(tt.args.tag)
+			got, err := c.GetPreviousTag(tt.args.tag, ".")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetPreviousTag() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -102,19 +102,19 @@ func TestGitCommand_GetCommits(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "should retrun two commits from v1.1.0 to v1.0.0",
-			fields:  fields{
+			name: "should retrun two commits from v1.1.0 to v1.0.0",
+			fields: fields{
 				PreviousTagGetter: nil,
 				CommitGetter: func(name string, arg ...string) (string, error) {
 					return `sha1;feat: JIR-1556 commit message
 sha2;fix: JIR-9899 commit message`, nil
 				},
 			},
-			args:    args{
+			args: args{
 				tag:         "v1.1.0",
 				previousTag: "v1.0.0",
 			},
-			want:    []Commit{
+			want: []Commit{
 				{
 					Hash:    "sha1",
 					Message: "feat: JIR-1556 commit message",
@@ -127,28 +127,28 @@ sha2;fix: JIR-9899 commit message`, nil
 			wantErr: false,
 		},
 		{
-			name:    "should return no commits",
-			fields:  fields{
+			name: "should return no commits",
+			fields: fields{
 				PreviousTagGetter: nil,
 				CommitGetter: func(name string, arg ...string) (string, error) {
 					return ``, nil
 				},
 			},
-			args:    args{
+			args: args{
 				tag:         "v1.1.0",
 				previousTag: "v1.0.0",
 			},
 			wantErr: false,
 		},
 		{
-			name:    "should return error from command",
-			fields:  fields{
+			name: "should return error from command",
+			fields: fields{
 				PreviousTagGetter: nil,
 				CommitGetter: func(name string, arg ...string) (string, error) {
 					return ``, errors.New("err 128")
 				},
 			},
-			args:    args{
+			args: args{
 				tag:         "v1.1.0",
 				previousTag: "v1.0.0",
 			},
@@ -161,7 +161,7 @@ sha2;fix: JIR-9899 commit message`, nil
 				PreviousTagGetter: tt.fields.PreviousTagGetter,
 				CommitGetter:      tt.fields.CommitGetter,
 			}
-			got, err := c.GetCommits(tt.args.tag, tt.args.previousTag)
+			got, err := c.GetCommits(tt.args.tag, tt.args.previousTag, ".")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCommits() error = %v, wantErr %v", err, tt.wantErr)
 				return

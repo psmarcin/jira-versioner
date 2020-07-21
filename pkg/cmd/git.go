@@ -30,12 +30,12 @@ func New() Git {
 }
 
 // GetCommits gets all commits between current and previous tag
-func (c Git) GetCommits(currentTag, previousTag string) ([]Commit, error) {
+func (c Git) GetCommits(currentTag, previousTag, gitPath string) ([]Commit, error) {
 	var commits []Commit
 	r := fmt.Sprintf("%s...%s", currentTag, previousTag)
 	log.Printf("[GIT] found tags: %s", r)
 
-	out, err := c.CommitGetter("git", "log", "--pretty=format:\"%H;%s\"", "--no-notes", r)
+	out, err := c.CommitGetter("git", "-C", gitPath, "log", "--pretty=format:\"%H;%s\"", "--no-notes", r)
 	if err != nil {
 		return nil, err
 	}
@@ -55,8 +55,8 @@ func (c Git) GetCommits(currentTag, previousTag string) ([]Commit, error) {
 }
 
 // GetPreviousTag tries to get one tag before given tag
-func (c Git) GetPreviousTag(tag string) (string, error) {
-	out, err := c.PreviousTagGetter("git", "describe", "--tags", "--abbrev=0", tag+"^")
+func (c Git) GetPreviousTag(tag, gitPath string) (string, error) {
+	out, err := c.PreviousTagGetter("git", "-C", gitPath, "describe", "--tags", "--abbrev=0", tag+"^")
 	if err != nil {
 		return "", err
 	}

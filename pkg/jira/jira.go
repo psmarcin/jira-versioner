@@ -66,10 +66,10 @@ func (j *Jira) getProject(projectId string) (jira.Project, error) {
 }
 
 // GetVersion looks for given version name if exists
-func (j Jira) GetVersion(name string) (*jira.Version, bool, error){
-	for _, version := range j.Project.Versions{
-		if version.Name == name{
-			return &version, true,  nil
+func (j Jira) GetVersion(name string) (*jira.Version, bool, error) {
+	for _, version := range j.Project.Versions {
+		if version.Name == name {
+			return &version, true, nil
 		}
 	}
 	return &jira.Version{}, false, nil

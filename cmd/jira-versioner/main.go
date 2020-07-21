@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"github.com/psmarcin/jira-versioner/pkg/git"
 	"github.com/psmarcin/jira-versioner/pkg/jira"
-	cobra "github.com/spf13/cobra"
+	"github.com/spf13/cobra"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 var (
@@ -21,6 +22,14 @@ All automatically.`,
 )
 
 func init() {
+	// get current directory path
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	pwd := filepath.Dir(ex)
+	log.Printf("[JIRA-VERSIONER] git directory: %s", pwd)
+
 	//rootCmd.Flags().StringP("verbose", "v", "info", "")
 	rootCmd.Flags().StringP("version", "", "", "release name, required, must be unique")
 	rootCmd.Flags().StringP("tag", "t", "", "release name, required, must be unique")
@@ -28,6 +37,7 @@ func init() {
 	rootCmd.Flags().StringP("jira-token", "k", "", "Jira token/key")
 	rootCmd.Flags().StringP("jira-project", "p", "", "Jira project")
 	rootCmd.Flags().StringP("jira-base-url", "u", "", "Jira service base url")
+	rootCmd.Flags().StringP("dir", "d", pwd, "absolute directory path to git repository")
 	rootCmd.MarkFlagRequired("version")
 	rootCmd.MarkFlagRequired("tag")
 	rootCmd.MarkFlagRequired("jira-email")
@@ -47,8 +57,9 @@ func rootFunc(c *cobra.Command, args []string) {
 	jiraToken := c.Flag("jira-token").Value.String()
 	jiraProject := c.Flag("jira-project").Value.String()
 	jiraBaseUrl := c.Flag("jira-base-url").Value.String()
+	gitDir := c.Flag("dir").Value.String()
 
-	g := git.New()
+	g := git.New(gitDir)
 
 	tasks, err := g.GetTasks(tag)
 	if err != nil {
@@ -70,7 +81,7 @@ func rootFunc(c *cobra.Command, args []string) {
 		log.Panicf("[VERSION] can't update task to fix version %s", err)
 	}
 
-	log.Print("Done ✅")
+	log.Print("[JIRA-VERSIONER] Done ✅")
 }
 
 func Execute() {

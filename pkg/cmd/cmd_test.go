@@ -19,7 +19,7 @@ func TestExec(t *testing.T) {
 				name: "echo",
 				args: []string{"123"},
 			},
-			want:    `123
+			want: `123
 `,
 			wantErr: false,
 		},
