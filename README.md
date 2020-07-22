@@ -22,7 +22,7 @@ Just grab one file from download page: https://github.com/psmarcin/jira-versione
 ## Examples 
 
 ```shell script
-./jira-versioning -e jira@example.com -k SOME_TOKEN -p 10003 -v v1.1.0 -t v1.1.0 -u https://example.atlassian.net
+jira-versioner -e jira@example.com -k SOME_TOKEN -p 10003 -v v1.1.0 -t v1.1.0 -u https://example.atlassian.net
 ```
 
 Help: 
