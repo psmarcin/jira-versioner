@@ -28,14 +28,14 @@ Just grab one file from download page: https://github.com/psmarcin/jira-versione
 Help: 
 ```shell script
 Usage:
-  jira-releaser [flags]
+  jira-versioner [flags]
 
 Examples:
-jira-versioning -e jira@example.com -k SOME_TOKEN -p 10003 -v v1.1.0 -t v1.1.0 -u https://example.atlassian.net
+jira-versioner -e jira@example.com -k SOME_TOKEN -p 10003 -v v1.1.0 -t v1.1.0 -u https://example.atlassian.net
 
 Flags:
   -d, --dir string             Absolute directory path to git repository (default "/Users/psmarcin/projects/jira-releaser")
-  -h, --help                   help for jira-releaser
+  -h, --help                   help for jira-versioner
   -u, --jira-base-url string   Jira service base url, example: https://example.atlassian.net
   -e, --jira-email string      Jira email
   -p, --jira-project string    Jira project, it has to be ID, example: 10003
@@ -43,7 +43,7 @@ Flags:
   -v, --jira-version string    Version name for Jira
   -t, --tag string             Existing git tag
 
-required flag(s) "jira-base-url", "jira-email", "jira-project", "jira-token", "jira-version", "tag" not set
+required flag(s) "jira-base-url", "jira-email", "jira-project", "jira-token", "jira-version", "tag"
 ```
 
 ## Contributing
