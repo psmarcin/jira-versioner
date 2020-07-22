@@ -12,10 +12,10 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "jira-releaser",
+		Use:   "jira-versioner",
 		Short: "A simple version setter for Jira tasks since last version",
-		Long: `A solution for automatically create release, 
-link all issues from commits to newly created release. 
+		Long: `A solution for automatically create version, 
+link all issues from commits to newly created version. 
 All automatically.`,
 		Run: rootFunc,
 	}
@@ -44,7 +44,7 @@ func init() {
 	rootCmd.MarkFlagRequired("jira-project")
 	rootCmd.MarkFlagRequired("jira-base-url")
 
-	rootCmd.Example = "jira-versioning -e jira@example.com -k SOME_TOKEN -p 10003 -v v1.1.0 -t v1.1.0 -u https://example.atlassian.net"
+	rootCmd.Example = "jira-versioner -e jira@example.com -k SOME_TOKEN -p 10003 -v v1.1.0 -t v1.1.0 -u https://example.atlassian.net"
 }
 
 func main() {
