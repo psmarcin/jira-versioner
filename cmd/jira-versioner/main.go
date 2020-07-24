@@ -37,14 +37,13 @@ func init() {
 	rootCmd.Flags().StringP("jira-project", "p", "", "Jira project, it has to be ID, example: 10003")
 	rootCmd.Flags().StringP("jira-base-url", "u", "", "Jira service base url, example: https://example.atlassian.net")
 	rootCmd.Flags().StringP("dir", "d", pwd, "Absolute directory path to git repository")
-	rootCmd.MarkFlagRequired("jira-version")
 	rootCmd.MarkFlagRequired("tag")
 	rootCmd.MarkFlagRequired("jira-email")
 	rootCmd.MarkFlagRequired("jira-token")
 	rootCmd.MarkFlagRequired("jira-project")
 	rootCmd.MarkFlagRequired("jira-base-url")
 
-	rootCmd.Example = "jira-versioner -e jira@example.com -k SOME_TOKEN -p 10003 -v v1.1.0 -t v1.1.0 -u https://example.atlassian.net"
+	rootCmd.Example = "jira-versioner -e jira@example.com -k SOME_TOKEN -p 10003 -t v1.1.0 -u https://example.atlassian.net"
 }
 
 func main() {
@@ -52,8 +51,13 @@ func main() {
 }
 
 func rootFunc(c *cobra.Command, args []string) {
-	version := c.Flag("jira-version").Value.String()
 	tag := c.Flag("tag").Value.String()
+
+	version := c.Flag("jira-version").Value.String()
+	if version == ""{
+		version = tag
+	}
+
 	jiraEmail := c.Flag("jira-email").Value.String()
 	jiraToken := c.Flag("jira-token").Value.String()
 	jiraProject := c.Flag("jira-project").Value.String()
