@@ -61,6 +61,6 @@ func (c Git) GetPreviousTag(tag, gitPath string) (string, error) {
 		return "", err
 	}
 
-	return strings.TrimSpace(string(out)), nil
+	return strings.TrimSpace(out), nil
 
 }
