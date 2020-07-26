@@ -115,15 +115,13 @@ func (j *Jira) CreateVersion(name string) (*jira.Version, error) {
 }
 
 // LinkTasksToVersion iterates over all give tasks and tries to link them to version
-func (j Jira) LinkTasksToVersion(taskIds []string) error {
+func (j Jira) LinkTasksToVersion(taskIds []string) {
 	for _, taskId := range taskIds {
 		err := j.SetIssueVersion(taskId)
 		if err != nil {
-			return err
+			log.Printf("[JIRA] can't update task %s to fixed version %s (%s)", taskId, j.Version.Name, j.Version.ID)
 		}
 	}
-
-	return nil
 }
 
 // SetIssueVersion makes http request to Jira service to update task with fixed version

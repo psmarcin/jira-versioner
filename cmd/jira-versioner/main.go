@@ -82,12 +82,9 @@ func rootFunc(c *cobra.Command, args []string) {
 		log.Panicf("[VERSION] error while creating version %+v", err)
 	}
 
-	err = j.LinkTasksToVersion(tasks)
-	if err != nil {
-		log.Panicf("[VERSION] can't update task to fix version %s", err)
-	}
+	j.LinkTasksToVersion(tasks)
 
-	log.Print("[JIRA-VERSIONER] Done ✅")
+	log.Print("[JIRA-VERSIONER] done ✅")
 }
 
 func Execute() {
