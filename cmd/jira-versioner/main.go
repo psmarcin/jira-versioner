@@ -33,7 +33,7 @@ func init() {
 	rootCmd.Flags().StringP("jira-version", "v", "", "Version name for Jira")
 	rootCmd.Flags().StringP("tag", "t", "", "Existing git tag")
 	rootCmd.Flags().StringP("jira-email", "e", "", "Jira email")
-	rootCmd.Flags().StringP("jira-token", "k", "", "Jira token/key")
+	rootCmd.Flags().StringP("jira-token", "k", "", "Jira token/key/password")
 	rootCmd.Flags().StringP("jira-project", "p", "", "Jira project, it has to be ID, example: 10003")
 	rootCmd.Flags().StringP("jira-base-url", "u", "", "Jira service base url, example: https://example.atlassian.net")
 	rootCmd.Flags().StringP("dir", "d", pwd, "Absolute directory path to git repository")
@@ -43,7 +43,7 @@ func init() {
 	rootCmd.MarkFlagRequired("jira-project")
 	rootCmd.MarkFlagRequired("jira-base-url")
 
-	rootCmd.Example = "jira-versioner -e jira@example.com -k SOME_TOKEN -p 10003 -t v1.1.0 -u https://example.atlassian.net"
+	rootCmd.Example = "jira-versioner -e jira@example.com -k pa$$wor0 -p 10003 -t v1.1.0 -u https://example.atlassian.net"
 }
 
 func main() {
