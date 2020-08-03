@@ -21,12 +21,12 @@ Just grab one file from download page: https://github.com/psmarcin/jira-versione
 
 ## Examples 
 
-```shell script
+```console
 jira-versioner -e jira@example.com -k SOME_TOKEN -p 10003 -v v1.1.0 -t v1.1.0 -u https://example.atlassian.net
 ```
 
 Help: 
-```shell script
+```console
 Usage:
   jira-versioner [flags]
 
@@ -50,7 +50,7 @@ required flag(s) "jira-base-url", "jira-email", "jira-project", "jira-token", "j
 
 Here is our git log history:
 
-```shell script
+```console
 05e5705322cc2d9daf7fb376a8c5e9cbd039b257 (HEAD -> master, tag: v2.1.0, origin/master) chore: remove unnecessary string conversion
 9bf13576317845cd7d10980d62afe719872ceb01 feat: error logs contains command output JR-4
 831e4c253829dbc12683baa5b4d494aa3524f39f feat: jira version not required, default tag JR-13
