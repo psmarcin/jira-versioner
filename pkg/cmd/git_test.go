@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/kataras/golog"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -102,7 +103,7 @@ func TestGitCommand_GetCommits(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "should retrun two commits from v1.1.0 to v1.0.0",
+			name: "should return two commits from v1.1.0 to v1.0.0",
 			fields: fields{
 				PreviousTagGetter: nil,
 				CommitGetter: func(name string, arg ...string) (string, error) {
@@ -157,9 +158,11 @@ sha2;fix: JIR-9899 commit message`, nil
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			l := golog.New()
 			c := Git{
 				PreviousTagGetter: tt.fields.PreviousTagGetter,
 				CommitGetter:      tt.fields.CommitGetter,
+				log: l,
 			}
 			got, err := c.GetCommits(tt.args.tag, tt.args.previousTag, ".")
 			if (err != nil) != tt.wantErr {
@@ -174,6 +177,7 @@ sha2;fix: JIR-9899 commit message`, nil
 }
 
 func TestNew(t *testing.T) {
-	g := New()
+	l:= golog.New()
+	g := New(l)
 	assert.NotEmpty(t, g)
 }

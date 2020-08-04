@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/kataras/golog"
 	"github.com/psmarcin/jira-versioner/pkg/git"
 	"github.com/psmarcin/jira-versioner/pkg/jira"
 	"github.com/spf13/cobra"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -51,6 +51,7 @@ func main() {
 }
 
 func rootFunc(c *cobra.Command, args []string) {
+	log := golog.New()
 	tag := c.Flag("tag").Value.String()
 
 	version := c.Flag("jira-version").Value.String()
@@ -63,28 +64,29 @@ func rootFunc(c *cobra.Command, args []string) {
 	jiraProject := c.Flag("jira-project").Value.String()
 	jiraBaseUrl := c.Flag("jira-base-url").Value.String()
 	gitDir := c.Flag("dir").Value.String()
-	log.Printf("[JIRA-VERSIONER] git directory: %s", gitDir)
+	log.Infof("[JIRA-VERSIONER] git directory: %s", gitDir)
 
-	g := git.New(gitDir)
+	g := git.New(gitDir, log)
 
 	tasks, err := g.GetTasks(tag)
 	if err != nil {
-		log.Panicf("[GIT] error while getting tasks since latest commit %+v", err)
+		log.Fatalf("[GIT] error while getting tasks since latest commit %+v", err)
 	}
 
-	j, err := jira.New(jiraEmail, jiraToken, jiraProject, jiraBaseUrl)
+
+	j, err := jira.New(jiraEmail, jiraToken, jiraProject, jiraBaseUrl, log)
 	if err != nil {
-		log.Panicf("[VERSION] error while connecting to jira server %+v", err)
+		log.Fatalf("[VERSION] error while connecting to jira server %+v", err)
 	}
 
 	_, err = j.CreateVersion(version)
 	if err != nil {
-		log.Panicf("[VERSION] error while creating version %+v", err)
+		log.Fatalf("[VERSION] error while creating version %+v", err)
 	}
 
 	j.LinkTasksToVersion(tasks)
 
-	log.Print("[JIRA-VERSIONER] done ✅")
+	log.Infof("[JIRA-VERSIONER] done ✅")
 }
 
 func Execute() {

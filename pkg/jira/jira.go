@@ -3,8 +3,8 @@ package jira
 import (
 	"github.com/andygrunwald/go-jira"
 	"github.com/pkg/errors"
+	pslog "github.com/psmarcin/jira-versioner/pkg/log"
 	"io/ioutil"
-	"log"
 	"strconv"
 	"time"
 )
@@ -16,6 +16,7 @@ type Jira struct {
 	Project   *jira.Project
 	ProjectID string
 	Version   *jira.Version
+	log       pslog.Logger
 }
 
 type UpdatePayload struct {
@@ -33,8 +34,10 @@ type IdVersion struct {
 }
 
 // New creates Jira instance with all required details like email, token, base url
-func New(email, token, projectId, baseUrl string) (Jira, error) {
-	j := Jira{}
+func New(email, token, projectId, baseUrl string, log pslog.Logger) (Jira, error) {
+	j := Jira{
+		log: log,
+	}
 	tp := jira.BasicAuthTransport{
 		Username: email,
 		Password: token,
@@ -85,7 +88,7 @@ func (j *Jira) CreateVersion(name string) (*jira.Version, error) {
 	}
 	if isFound == true {
 		j.Version = version
-		log.Printf("[JIRA] version %s already exists, skip creating", j.Version.Name)
+		j.log.Infof("[JIRA] version %s already exists, skip creating", j.Version.Name)
 		return version, nil
 	}
 
@@ -111,7 +114,7 @@ func (j *Jira) CreateVersion(name string) (*jira.Version, error) {
 
 	j.Version = version
 
-	log.Printf("[JIRA] version created %s", j.Version.Name)
+	j.log.Infof("[JIRA] version created %s", j.Version.Name)
 
 	return version, nil
 }
@@ -121,7 +124,7 @@ func (j Jira) LinkTasksToVersion(taskIds []string) {
 	for _, taskId := range taskIds {
 		err := j.SetIssueVersion(taskId)
 		if err != nil {
-			log.Printf("[JIRA] can't update task %s to fixed version %s (%s)", taskId, j.Version.Name, j.Version.ID)
+			j.log.Warnf("[JIRA] can't update task %s to fixed version %s (%s)", taskId, j.Version.Name, j.Version.ID)
 		}
 	}
 }
@@ -152,6 +155,6 @@ func (j Jira) SetIssueVersion(taskID string) error {
 		return errors.Wrap(err, string(body))
 	}
 
-	log.Printf("[JIRA] task updated %s", taskID)
+	j.log.Infof("[JIRA] task updated %s", taskID)
 	return nil
 }

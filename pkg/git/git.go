@@ -2,6 +2,7 @@ package git
 
 import (
 	"github.com/psmarcin/jira-versioner/pkg/cmd"
+	pslog "github.com/psmarcin/jira-versioner/pkg/log"
 	"regexp"
 )
 
@@ -9,6 +10,7 @@ import (
 type Git struct {
 	Path         string
 	Dependencies Getter
+	log       pslog.Logger
 }
 
 // Getter is interface for GetTasks dependencies for easier mocking
@@ -18,11 +20,12 @@ type Getter interface {
 }
 
 // New creates Git with default dependencies
-func New(path string) Git {
-	command := cmd.New()
+func New(path string, log pslog.Logger) Git {
+	command := cmd.New(log)
 	return Git{
 		path,
 		command,
+		log,
 	}
 }
 

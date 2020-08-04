@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	pslog "github.com/psmarcin/jira-versioner/pkg/log"
 	"strings"
 )
 
@@ -10,6 +10,8 @@ import (
 type Git struct {
 	PreviousTagGetter
 	CommitGetter
+
+	log       pslog.Logger
 }
 
 // Commit stores basic data about git commit
@@ -22,10 +24,11 @@ type PreviousTagGetter func(name string, arg ...string) (string, error)
 type CommitGetter func(name string, arg ...string) (string, error)
 
 // New creates Git with default dependencies
-func New() Git {
+func New(log pslog.Logger) Git {
 	return Git{
 		PreviousTagGetter: Exec,
 		CommitGetter:      Exec,
+		log: log,
 	}
 }
 
@@ -33,7 +36,7 @@ func New() Git {
 func (c Git) GetCommits(currentTag, previousTag, gitPath string) ([]Commit, error) {
 	var commits []Commit
 	r := fmt.Sprintf("%s...%s", currentTag, previousTag)
-	log.Printf("[GIT] found tags: %s", r)
+	c.log.Infof("[GIT] found tags: %s", r)
 
 	out, err := c.CommitGetter("git", "-C", gitPath, "log", "--pretty=format:\"%H;%s\"", "--no-notes", r)
 	if err != nil {
