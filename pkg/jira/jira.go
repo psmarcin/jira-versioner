@@ -2,6 +2,8 @@ package jira
 
 import (
 	"github.com/andygrunwald/go-jira"
+	"github.com/pkg/errors"
+	"io/ioutil"
 	"log"
 	"strconv"
 	"time"
@@ -140,9 +142,14 @@ func (j Jira) SetIssueVersion(taskID string) error {
 
 	req, _ := j.Client.NewRequest("PUT", "/rest/api/2/issue/"+taskID, p)
 	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
-	_, err := j.Client.Do(req, nil)
+	res, err := j.Client.Do(req, nil)
 	if err != nil {
-		return err
+		body, readErr := ioutil.ReadAll(res.Body)
+		if readErr != nil {
+			return readErr
+		}
+
+		return errors.Wrap(err, string(body))
 	}
 
 	log.Printf("[JIRA] task updated %s", taskID)

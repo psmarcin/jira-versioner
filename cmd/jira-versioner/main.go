@@ -54,7 +54,7 @@ func rootFunc(c *cobra.Command, args []string) {
 	tag := c.Flag("tag").Value.String()
 
 	version := c.Flag("jira-version").Value.String()
-	if version == ""{
+	if version == "" {
 		version = tag
 	}
 
