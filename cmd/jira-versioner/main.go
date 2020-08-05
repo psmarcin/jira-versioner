@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/kataras/golog"
 	"github.com/psmarcin/jira-versioner/pkg/git"
 	"github.com/psmarcin/jira-versioner/pkg/jira"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 	"os"
 	"path/filepath"
 )
@@ -51,7 +51,9 @@ func main() {
 }
 
 func rootFunc(c *cobra.Command, args []string) {
-	log := golog.New()
+	log := zap.NewExample().Sugar()
+	defer log.Sync()
+
 	tag := c.Flag("tag").Value.String()
 
 	version := c.Flag("jira-version").Value.String()
@@ -64,6 +66,7 @@ func rootFunc(c *cobra.Command, args []string) {
 	jiraProject := c.Flag("jira-project").Value.String()
 	jiraBaseUrl := c.Flag("jira-base-url").Value.String()
 	gitDir := c.Flag("dir").Value.String()
+	log.Debugf("[JIRA-VERSIONER] starting with params jira-email: %s, jira-token: %s, jira-project: %s, jira-base-url: %s, dir: %s, tag: %s, jira-version: %s", jiraEmail, jiraToken, jiraProject, jiraBaseUrl, gitDir, tag, version)
 	log.Infof("[JIRA-VERSIONER] git directory: %s", gitDir)
 
 	g := git.New(gitDir, log)
@@ -72,7 +75,6 @@ func rootFunc(c *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("[GIT] error while getting tasks since latest commit %+v", err)
 	}
-
 
 	j, err := jira.New(jiraEmail, jiraToken, jiraProject, jiraBaseUrl, log)
 	if err != nil {

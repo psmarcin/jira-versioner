@@ -38,11 +38,13 @@ func (g *Git) GetTasks(tag string) ([]string, error) {
 	if err != nil {
 		return tasks, err
 	}
+	g.log.Debugf("[GIT] found previous tag: %s", previousTag)
 
 	commits, err := g.Dependencies.GetCommits(tag, previousTag, g.Path)
 	if err != nil {
 		return nil, err
 	}
+	g.log.Debugf("[GIT] found commits: %+v", commits)
 
 	re, err := regexp.Compile(`(\w+)-(\d+)`)
 	if err != nil {
@@ -59,6 +61,6 @@ func (g *Git) GetTasks(tag string) ([]string, error) {
 	for taskId := range taskMap {
 		tasks = append(tasks, taskId)
 	}
-
+	g.log.Debugf("[GIT] found tags: %s", tasks)
 	return tasks, nil
 }

@@ -60,12 +60,17 @@ func New(email, token, projectId, baseUrl string, log pslog.Logger) (Jira, error
 
 // getProject tries to find provided Jira project
 func (j *Jira) getProject(projectId string) (jira.Project, error) {
+	j.log.Debugf("[JIRA] getting project id from slug: %s", projectId)
 	p, _, err := j.Client.Project.Get(projectId)
 	if err != nil {
 		return jira.Project{}, err
 	}
+	j.log.Debugf("[JIRA] found project %s", p.Self)
+
 	j.Project = p
-	j.ProjectID = projectId
+	j.ProjectID = p.ID
+
+	j.log.Debugf("[JIRA] project id set to %s", j.ProjectID)
 
 	return *p, nil
 }
@@ -77,6 +82,7 @@ func (j Jira) GetVersion(name string) (*jira.Version, bool, error) {
 			return &version, true, nil
 		}
 	}
+	j.log.Debugf("[JIRA] can't find version %s", name)
 	return &jira.Version{}, false, nil
 }
 
@@ -86,6 +92,9 @@ func (j *Jira) CreateVersion(name string) (*jira.Version, error) {
 	if err != nil {
 		return version, err
 	}
+
+	j.log.Debugf("[JIRA] creating version: %s", version.Name)
+
 	if isFound == true {
 		j.Version = version
 		j.log.Infof("[JIRA] version %s already exists, skip creating", j.Version.Name)
@@ -122,6 +131,8 @@ func (j *Jira) CreateVersion(name string) (*jira.Version, error) {
 // LinkTasksToVersion iterates over all give tasks and tries to link them to version
 func (j Jira) LinkTasksToVersion(taskIds []string) {
 	for _, taskId := range taskIds {
+		j.log.Debugf("[JIRA] linking %s to %s", taskId, j.Version.Name)
+
 		err := j.SetIssueVersion(taskId)
 		if err != nil {
 			j.log.Warnf("[JIRA] can't update task %s to fixed version %s (%s)", taskId, j.Version.Name, j.Version.ID)
@@ -143,6 +154,7 @@ func (j Jira) SetIssueVersion(taskID string) error {
 		},
 	}
 
+	j.log.Debugf("[JIRA] setting version %s for task %s", j.Version.Name, taskID)
 	req, _ := j.Client.NewRequest("PUT", "/rest/api/2/issue/"+taskID, p)
 	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
 	res, err := j.Client.Do(req, nil)
@@ -151,6 +163,8 @@ func (j Jira) SetIssueVersion(taskID string) error {
 		if readErr != nil {
 			return readErr
 		}
+
+		j.log.Warnf("[JIRA] error while setting task %s to %s, %s", taskID, j.Version.Name, body)
 
 		return errors.Wrap(err, string(body))
 	}
