@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"errors"
-	"github.com/kataras/golog"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"reflect"
 	"testing"
 )
@@ -158,11 +158,12 @@ sha2;fix: JIR-9899 commit message`, nil
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := golog.New()
+			log := zap.NewExample().Sugar()
+			defer log.Sync()
 			c := Git{
 				PreviousTagGetter: tt.fields.PreviousTagGetter,
 				CommitGetter:      tt.fields.CommitGetter,
-				log: l,
+				log: log,
 			}
 			got, err := c.GetCommits(tt.args.tag, tt.args.previousTag, ".")
 			if (err != nil) != tt.wantErr {
@@ -177,7 +178,8 @@ sha2;fix: JIR-9899 commit message`, nil
 }
 
 func TestNew(t *testing.T) {
-	l:= golog.New()
-	g := New(l)
+	log := zap.NewExample().Sugar()
+	defer log.Sync()
+	g := New(log)
 	assert.NotEmpty(t, g)
 }
