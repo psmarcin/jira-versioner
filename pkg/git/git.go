@@ -10,7 +10,7 @@ import (
 type Git struct {
 	Path         string
 	Dependencies Getter
-	log       pslog.Logger
+	log          pslog.Logger
 }
 
 // Getter is interface for GetTasks dependencies for easier mocking

@@ -40,7 +40,7 @@ func TestGit_GetTasks_ReturnTaskIDsFromCommitMessage(t *testing.T) {
 	g := &Git{
 		Path:         ".",
 		Dependencies: m,
-		log: log,
+		log:          log,
 	}
 	got, err := g.GetTasks("v1.1.0")
 	assert.NoError(t, err)
@@ -65,7 +65,7 @@ func TestGit_GetTasks_ReturnTaskIDsFromCommitMessageOmitCommitsWithoutTaskID(t *
 	g := &Git{
 		Path:         ".",
 		Dependencies: m,
-		log: log,
+		log:          log,
 	}
 	got, err := g.GetTasks("v1.1.0")
 	assert.NoError(t, err)
@@ -89,7 +89,7 @@ func TestGit_GetTasks_ReturnTaskIDsFromCommitMessageOmitDuplicatedTaskIDs(t *tes
 	g := &Git{
 		Path:         ".",
 		Dependencies: m,
-		log: log,
+		log:          log,
 	}
 	got, err := g.GetTasks("v1.1.0")
 	assert.NoError(t, err)

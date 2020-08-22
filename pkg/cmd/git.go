@@ -11,7 +11,7 @@ type Git struct {
 	PreviousTagGetter
 	CommitGetter
 
-	log       pslog.Logger
+	log pslog.Logger
 }
 
 // Commit stores basic data about git commit
@@ -28,7 +28,7 @@ func New(log pslog.Logger) Git {
 	return Git{
 		PreviousTagGetter: Exec,
 		CommitGetter:      Exec,
-		log: log,
+		log:               log,
 	}
 }
 

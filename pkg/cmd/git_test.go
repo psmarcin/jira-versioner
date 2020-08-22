@@ -163,7 +163,7 @@ sha2;fix: JIR-9899 commit message`, nil
 			c := Git{
 				PreviousTagGetter: tt.fields.PreviousTagGetter,
 				CommitGetter:      tt.fields.CommitGetter,
-				log: log,
+				log:               log,
 			}
 			got, err := c.GetCommits(tt.args.tag, tt.args.previousTag, ".")
 			if (err != nil) != tt.wantErr {
