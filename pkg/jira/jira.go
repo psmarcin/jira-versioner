@@ -17,6 +17,7 @@ type Jira struct {
 	ProjectID string
 	Version   *jira.Version
 	log       pslog.Logger
+	dryRun    bool
 }
 
 type UpdatePayload struct {
@@ -33,24 +34,34 @@ type IdVersion struct {
 	Id string `json:"id"`
 }
 
-// New creates Jira instance with all required details like email, token, base url
-func New(email, token, projectId, baseUrl string, log pslog.Logger) (Jira, error) {
+type NewConfig struct {
+	Username  string
+	Token     string
+	ProjectID string
+	BaseURL   string
+	Log       pslog.Logger
+	DryRun    bool
+}
+
+// New creates Jira instance with all required details like email, Token, base url
+func New(config NewConfig) (Jira, error) {
 	j := Jira{
-		log: log,
+		log:    config.Log,
+		dryRun: config.DryRun,
 	}
 	tp := jira.BasicAuthTransport{
-		Username: email,
-		Password: token,
+		Username: config.Username,
+		Password: config.Token,
 	}
 
-	client, err := jira.NewClient(tp.Client(), baseUrl)
+	client, err := jira.NewClient(tp.Client(), config.BaseURL)
 	if err != nil {
 		return j, err
 	}
 
 	j.Client = client
 
-	_, err = j.getProject(projectId)
+	_, err = j.getProject(config.ProjectID)
 	if err != nil {
 		return j, err
 	}
@@ -116,12 +127,15 @@ func (j *Jira) CreateVersion(name string) (*jira.Version, error) {
 		// TODO: put task ids into description
 		Description: "",
 	}
-	version, _, err = j.Client.Version.Create(v)
-	if err != nil {
-		return v, err
+
+	if !j.dryRun {
+		v, _, err = j.Client.Version.Create(v)
+		if err != nil {
+			return v, err
+		}
 	}
 
-	j.Version = version
+	j.Version = v
 
 	j.log.Infof("[JIRA] version created %s", j.Version.Name)
 
@@ -142,6 +156,7 @@ func (j Jira) LinkTasksToVersion(taskIds []string) {
 
 // SetIssueVersion makes http request to Jira service to update task with fixed version
 func (j Jira) SetIssueVersion(taskID string) error {
+	var res *jira.Response
 	p := UpdatePayload{
 		Update: UpdateTypePayload{
 			FixVersions: []AddFixedVersion{
@@ -155,9 +170,16 @@ func (j Jira) SetIssueVersion(taskID string) error {
 	}
 
 	j.log.Debugf("[JIRA] setting version %s for task %s", j.Version.Name, taskID)
-	req, _ := j.Client.NewRequest("PUT", "/rest/api/2/issue/"+taskID, p)
+	req, err := j.Client.NewRequest("PUT", "/rest/api/2/issue/"+taskID, p)
+	if err != nil {
+		return errors.Wrapf(err, "can't create Jira request to %s", "/rest/api/2/issue/"+taskID)
+	}
 	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
-	res, err := j.Client.Do(req, nil)
+
+	if !j.dryRun {
+		res, err = j.Client.Do(req, nil)
+	}
+
 	if err != nil {
 		body, readErr := ioutil.ReadAll(res.Body)
 		if readErr != nil {
