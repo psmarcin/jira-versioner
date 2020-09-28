@@ -37,6 +37,7 @@ func init() {
 	rootCmd.Flags().StringP("jira-project", "p", "", "Jira project, it has to be ID, example: 10003")
 	rootCmd.Flags().StringP("jira-base-url", "u", "", "Jira service base url, example: https://example.atlassian.net")
 	rootCmd.Flags().StringP("dir", "d", pwd, "Absolute directory path to git repository")
+	rootCmd.Flags().BoolP("dry-run", "", false, "Enable dry run mode")
 	rootCmd.MarkFlagRequired("tag")
 	rootCmd.MarkFlagRequired("jira-email")
 	rootCmd.MarkFlagRequired("jira-token")
@@ -52,6 +53,7 @@ func main() {
 
 func rootFunc(c *cobra.Command, args []string) {
 	log := zap.NewExample().Sugar()
+	dryRun := false
 	defer log.Sync()
 
 	tag := c.Flag("tag").Value.String()
@@ -65,8 +67,23 @@ func rootFunc(c *cobra.Command, args []string) {
 	jiraToken := c.Flag("jira-token").Value.String()
 	jiraProject := c.Flag("jira-project").Value.String()
 	jiraBaseUrl := c.Flag("jira-base-url").Value.String()
+	dryRunRaw := c.Flag("dry-run").Value.String()
+	if dryRunRaw == "true" {
+		dryRun = true
+	}
 	gitDir := c.Flag("dir").Value.String()
-	log.Debugf("[JIRA-VERSIONER] starting with params jira-email: %s, jira-token: %s, jira-project: %s, jira-base-url: %s, dir: %s, tag: %s, jira-version: %s", jiraEmail, jiraToken, jiraProject, jiraBaseUrl, gitDir, tag, version)
+
+	log.Debugf(
+		"[JIRA-VERSIONER] starting with params jira-email: %s, jira-token: %s, jira-project: %s, jira-base-url: %s, dir: %s, tag: %s, jira-version: %s, dry-run: %t",
+		jiraEmail,
+		jiraToken,
+		jiraProject,
+		jiraBaseUrl,
+		gitDir,
+		tag,
+		version,
+		dryRun,
+	)
 	log.Infof("[JIRA-VERSIONER] git directory: %s", gitDir)
 
 	g := git.New(gitDir, log)
@@ -76,7 +93,15 @@ func rootFunc(c *cobra.Command, args []string) {
 		log.Fatalf("[GIT] error while getting tasks since latest commit %+v", err)
 	}
 
-	j, err := jira.New(jiraEmail, jiraToken, jiraProject, jiraBaseUrl, log)
+	var jiraConfig = jira.NewConfig{
+		Username:  jiraEmail,
+		Token:     jiraToken,
+		ProjectID: jiraProject,
+		BaseURL:   jiraBaseUrl,
+		Log:       log,
+		DryRun:    dryRun,
+	}
+	j, err := jira.New(jiraConfig)
 	if err != nil {
 		log.Fatalf("[VERSION] error while connecting to jira server %+v", err)
 	}
