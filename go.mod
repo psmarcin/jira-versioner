@@ -3,7 +3,7 @@ module github.com/psmarcin/jira-versioner
 go 1.14
 
 require (
-	github.com/andygrunwald/go-jira v1.12.0
+	github.com/andygrunwald/go-jira v1.13.0
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
