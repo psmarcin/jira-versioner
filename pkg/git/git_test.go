@@ -1,11 +1,12 @@
 package git
 
 import (
+	"testing"
+
 	"github.com/psmarcin/jira-versioner/pkg/cmd"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
-	"testing"
 )
 
 type MockedGit1 struct {
@@ -26,10 +27,15 @@ func (m *MockedGit1) GetPreviousTag(tag, gitPath string) (string, error) {
 
 func TestGit_GetTasks_ReturnTaskIDsFromCommitMessage(t *testing.T) {
 	log := zap.NewExample().Sugar()
-	defer log.Sync()
+	defer func() {
+		_ = log.Sync()
+	}()
 
 	firstCommit := cmd.Commit{Hash: "sha1", Message: "feat: JIR-123 Pariatur illum quia nisi praesentium."}
-	secondCommit := cmd.Commit{Hash: "sha2", Message: "feat: epudiandae magnam explicabo laborum dolores JIR-15 epudiandae magnam explicabo laborum dolores."}
+	secondCommit := cmd.Commit{
+		Hash:    "sha2",
+		Message: "feat: epudiandae magnam explicabo laborum dolores JIR-15 epudiandae magnam explicabo laborum dolores.",
+	}
 
 	m := new(MockedGit1)
 	m.On("GetPreviousTag", "v1.1.0", ".").Return("v1.0.0", nil)
@@ -49,12 +55,19 @@ func TestGit_GetTasks_ReturnTaskIDsFromCommitMessage(t *testing.T) {
 	assert.Contains(t, got, "JIR-123")
 }
 
+// nolint:dupl // omit dupl because it's almost the same codes
 func TestGit_GetTasks_ReturnTaskIDsFromCommitMessageOmitCommitsWithoutTaskID(t *testing.T) {
 	log := zap.NewExample().Sugar()
-	defer log.Sync()
+
+	defer func() {
+		_ = log.Sync()
+	}()
 
 	firstCommit := cmd.Commit{Hash: "sha1", Message: "feat: JIR-123 Pariatur illum quia nisi praesentium."}
-	secondCommit := cmd.Commit{Hash: "sha2", Message: "feat: epudiandae magnam explicabo laborum dolores epudiandae magnam explicabo laborum dolores."}
+	secondCommit := cmd.Commit{
+		Hash:    "sha2",
+		Message: "feat: epudiandae magnam explicabo laborum dolores epudiandae magnam explicabo laborum dolores.",
+	}
 
 	m := new(MockedGit1)
 	m.On("GetPreviousTag", "v1.1.0", ".").Return("v1.0.0", nil)
@@ -73,12 +86,19 @@ func TestGit_GetTasks_ReturnTaskIDsFromCommitMessageOmitCommitsWithoutTaskID(t *
 	assert.Contains(t, got, "JIR-123")
 }
 
+// nolint:dupl // omit dupl because it's almost the same code
 func TestGit_GetTasks_ReturnTaskIDsFromCommitMessageOmitDuplicatedTaskIDs(t *testing.T) {
 	log := zap.NewExample().Sugar()
-	defer log.Sync()
+
+	defer func() {
+		_ = log.Sync()
+	}()
 
 	firstCommit := cmd.Commit{Hash: "sha1", Message: "feat: JIR-123 Pariatur illum quia nisi praesentium."}
-	secondCommit := cmd.Commit{Hash: "sha2", Message: "feat: epudiandae JIR-123 magnam explicabo laborum dolores epudiandae magnam explicabo laborum dolores."}
+	secondCommit := cmd.Commit{
+		Hash:    "sha2",
+		Message: "feat: epudiandae JIR-123 magnam explicabo laborum dolores epudiandae magnam explicabo laborum dolores.",
+	}
 
 	m := new(MockedGit1)
 	m.On("GetPreviousTag", "v1.1.0", ".").Return("v1.0.0", nil)
