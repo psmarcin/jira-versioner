@@ -15,6 +15,13 @@ Things that you need to have before we start:
 * Git repository
 * At least two Git tags in rage
 
+### Tools
+1. Lint: https://golangci-lint.run/usage/quick-start/
+
+### Scripts
+1. Lint: `make lint`
+1. Lint with autofix: `make lint-fix`
+
 ### Installing
 
 Just grab one file from download page: https://github.com/psmarcin/jira-versioner/releases/latest.

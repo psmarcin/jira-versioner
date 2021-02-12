@@ -1,9 +1,10 @@
 package git
 
 import (
+	"regexp"
+
 	"github.com/psmarcin/jira-versioner/pkg/cmd"
 	pslog "github.com/psmarcin/jira-versioner/pkg/log"
-	"regexp"
 )
 
 // Git keeps only dependencies
@@ -46,20 +47,16 @@ func (g *Git) GetTasks(tag string) ([]string, error) {
 	}
 	g.log.Debugf("[GIT] found commits: %+v", commits)
 
-	re, err := regexp.Compile(`(\w+)-(\d+)`)
-	if err != nil {
-		return nil, err
-	}
-
+	re := regexp.MustCompile(`(\w+)-(\d+)`)
 	for _, commit := range commits {
-		issueId := string(re.Find([]byte(commit.Message)))
-		if issueId != "" {
-			taskMap[issueId] = struct{}{}
+		issueID := string(re.Find([]byte(commit.Message)))
+		if issueID != "" {
+			taskMap[issueID] = struct{}{}
 		}
 	}
 
-	for taskId := range taskMap {
-		tasks = append(tasks, taskId)
+	for taskID := range taskMap {
+		tasks = append(tasks, taskID)
 	}
 	g.log.Debugf("[GIT] found tags: %s", tasks)
 	return tasks, nil

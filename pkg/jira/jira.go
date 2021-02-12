@@ -1,17 +1,17 @@
 package jira
 
 import (
-	"github.com/andygrunwald/go-jira"
-	"github.com/pkg/errors"
-	pslog "github.com/psmarcin/jira-versioner/pkg/log"
 	"io/ioutil"
 	"strconv"
 	"time"
+
+	"github.com/andygrunwald/go-jira"
+	"github.com/pkg/errors"
+	pslog "github.com/psmarcin/jira-versioner/pkg/log"
 )
 
 // Jira has all necessary details for interacting with Jira service
 type Jira struct {
-	token     string
 	Client    *jira.Client
 	Project   *jira.Project
 	ProjectID string
@@ -27,14 +27,14 @@ type UpdateTypePayload struct {
 	FixVersions []AddFixedVersion `json:"fixVersions"`
 }
 type AddFixedVersion struct {
-	Add IdVersion `json:"add"`
+	Add VersionID `json:"add"`
 }
 
-type IdVersion struct {
-	Id string `json:"id"`
+type VersionID struct {
+	ID string `json:"id"`
 }
 
-type NewConfig struct {
+type Config struct {
 	Username  string
 	Token     string
 	ProjectID string
@@ -44,7 +44,7 @@ type NewConfig struct {
 }
 
 // New creates Jira instance with all required details like email, Token, base url
-func New(config NewConfig) (Jira, error) {
+func New(config *Config) (Jira, error) {
 	j := Jira{
 		log:    config.Log,
 		dryRun: config.DryRun,
@@ -70,9 +70,9 @@ func New(config NewConfig) (Jira, error) {
 }
 
 // getProject tries to find provided Jira project
-func (j *Jira) getProject(projectId string) (jira.Project, error) {
-	j.log.Debugf("[JIRA] getting project id from slug: %s", projectId)
-	p, _, err := j.Client.Project.Get(projectId)
+func (j *Jira) getProject(projectID string) (jira.Project, error) {
+	j.log.Debugf("[JIRA] getting project id from slug: %s", projectID)
+	p, _, err := j.Client.Project.Get(projectID)
 	if err != nil {
 		return jira.Project{}, err
 	}
@@ -88,9 +88,9 @@ func (j *Jira) getProject(projectId string) (jira.Project, error) {
 
 // GetVersion looks for given version name if exists
 func (j Jira) GetVersion(name string) (*jira.Version, bool, error) {
-	for _, version := range j.Project.Versions {
-		if version.Name == name {
-			return &version, true, nil
+	for i := range j.Project.Versions {
+		if j.Project.Versions[i].Name == name {
+			return &j.Project.Versions[i], true, nil
 		}
 	}
 	j.log.Debugf("[JIRA] can't find version %s", name)
@@ -106,20 +106,20 @@ func (j *Jira) CreateVersion(name string) (*jira.Version, error) {
 
 	j.log.Debugf("[JIRA] creating version: %s", version.Name)
 
-	if isFound == true {
+	if isFound {
 		j.Version = version
 		j.log.Infof("[JIRA] version %s already exists, skip creating", j.Version.Name)
 		return version, nil
 	}
 
-	projectId, err := strconv.Atoi(j.ProjectID)
+	projectID, err := strconv.Atoi(j.ProjectID)
 	if err != nil {
 		return &jira.Version{}, err
 	}
 
 	v := &jira.Version{
 		Name:        name,
-		ProjectID:   projectId,
+		ProjectID:   projectID,
 		Archived:    false,
 		Released:    false,
 		StartDate:   time.Now().String(),
@@ -144,12 +144,12 @@ func (j *Jira) CreateVersion(name string) (*jira.Version, error) {
 
 // LinkTasksToVersion iterates over all give tasks and tries to link them to version
 func (j Jira) LinkTasksToVersion(taskIds []string) {
-	for _, taskId := range taskIds {
-		j.log.Debugf("[JIRA] linking %s to %s", taskId, j.Version.Name)
+	for _, taskID := range taskIds {
+		j.log.Debugf("[JIRA] linking %s to %s", taskID, j.Version.Name)
 
-		err := j.SetIssueVersion(taskId)
+		err := j.SetIssueVersion(taskID)
 		if err != nil {
-			j.log.Warnf("[JIRA] can't update task %s to fixed version %s (%s)", taskId, j.Version.Name, j.Version.ID)
+			j.log.Warnf("[JIRA] can't update task %s to fixed version %s (%s)", taskID, j.Version.Name, j.Version.ID)
 		}
 	}
 }
@@ -161,8 +161,8 @@ func (j Jira) SetIssueVersion(taskID string) error {
 		Update: UpdateTypePayload{
 			FixVersions: []AddFixedVersion{
 				{
-					Add: IdVersion{
-						Id: j.Version.ID,
+					Add: VersionID{
+						ID: j.Version.ID,
 					},
 				},
 			},

@@ -2,10 +2,16 @@ package cmd
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+)
+
+const (
+	v100 = "v1.0.0"
+	v110 = "v1.1.0"
 )
 
 func TestGitCommand_GetPreviousTag(t *testing.T) {
@@ -14,8 +20,7 @@ func TestGitCommand_GetPreviousTag(t *testing.T) {
 		CommitGetter      CommitGetter
 	}
 	type args struct {
-		tag           string
-		prevTagGetter PreviousTagGetter
+		tag string
 	}
 	tests := []struct {
 		name    string
@@ -28,26 +33,26 @@ func TestGitCommand_GetPreviousTag(t *testing.T) {
 			name: "should return v1.0.0",
 			fields: fields{
 				PreviousTagGetter: func(name string, arg ...string) (string, error) {
-					return "v1.0.0", nil
+					return v100, nil
 				},
 				CommitGetter: nil,
 			},
 			args: args{
-				tag: "v1.1.0",
+				tag: v110,
 			},
-			want:    "v1.0.0",
+			want:    v100,
 			wantErr: false,
 		},
 		{
 			name: "should return error",
 			fields: fields{
 				PreviousTagGetter: func(name string, arg ...string) (string, error) {
-					return "v1.0.0", errors.New("err 128")
+					return v100, errors.New("err 128")
 				},
 				CommitGetter: nil,
 			},
 			args: args{
-				tag: "v1.1.0",
+				tag: v110,
 			},
 			want:    "",
 			wantErr: true,
@@ -62,9 +67,9 @@ func TestGitCommand_GetPreviousTag(t *testing.T) {
 				CommitGetter: nil,
 			},
 			args: args{
-				tag: "v1.1.0",
+				tag: v110,
 			},
-			want:    "v1.0.0",
+			want:    v100,
 			wantErr: false,
 		},
 	}
@@ -87,6 +92,8 @@ func TestGitCommand_GetPreviousTag(t *testing.T) {
 }
 
 func TestGitCommand_GetCommits(t *testing.T) {
+	emptyString := ``
+
 	type fields struct {
 		PreviousTagGetter PreviousTagGetter
 		CommitGetter      CommitGetter
@@ -112,8 +119,8 @@ sha2;fix: JIR-9899 commit message`, nil
 				},
 			},
 			args: args{
-				tag:         "v1.1.0",
-				previousTag: "v1.0.0",
+				tag:         v110,
+				previousTag: v100,
 			},
 			want: []Commit{
 				{
@@ -132,12 +139,12 @@ sha2;fix: JIR-9899 commit message`, nil
 			fields: fields{
 				PreviousTagGetter: nil,
 				CommitGetter: func(name string, arg ...string) (string, error) {
-					return ``, nil
+					return emptyString, nil
 				},
 			},
 			args: args{
-				tag:         "v1.1.0",
-				previousTag: "v1.0.0",
+				tag:         v110,
+				previousTag: v100,
 			},
 			wantErr: false,
 		},
@@ -146,12 +153,12 @@ sha2;fix: JIR-9899 commit message`, nil
 			fields: fields{
 				PreviousTagGetter: nil,
 				CommitGetter: func(name string, arg ...string) (string, error) {
-					return ``, errors.New("err 128")
+					return emptyString, errors.New("err 128")
 				},
 			},
 			args: args{
-				tag:         "v1.1.0",
-				previousTag: "v1.0.0",
+				tag:         v110,
+				previousTag: v100,
 			},
 			wantErr: true,
 		},
@@ -159,7 +166,10 @@ sha2;fix: JIR-9899 commit message`, nil
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			log := zap.NewExample().Sugar()
-			defer log.Sync()
+			defer func() {
+				_ = log.Sync()
+			}()
+
 			c := Git{
 				PreviousTagGetter: tt.fields.PreviousTagGetter,
 				CommitGetter:      tt.fields.CommitGetter,
@@ -179,7 +189,9 @@ sha2;fix: JIR-9899 commit message`, nil
 
 func TestNew(t *testing.T) {
 	log := zap.NewExample().Sugar()
-	defer log.Sync()
+	defer func() {
+		_ = log.Sync()
+	}()
 	g := New(log)
 	assert.NotEmpty(t, g)
 }

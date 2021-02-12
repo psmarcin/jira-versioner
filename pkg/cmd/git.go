@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	pslog "github.com/psmarcin/jira-versioner/pkg/log"
 	"strings"
+
+	pslog "github.com/psmarcin/jira-versioner/pkg/log"
 )
 
 // Git keeps all dependency interface
@@ -65,5 +66,4 @@ func (c Git) GetPreviousTag(tag, gitPath string) (string, error) {
 	}
 
 	return strings.TrimSpace(out), nil
-
 }
