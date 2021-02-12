@@ -92,6 +92,8 @@ func TestGitCommand_GetPreviousTag(t *testing.T) {
 }
 
 func TestGitCommand_GetCommits(t *testing.T) {
+	emptyString := ``
+
 	type fields struct {
 		PreviousTagGetter PreviousTagGetter
 		CommitGetter      CommitGetter
@@ -137,7 +139,7 @@ sha2;fix: JIR-9899 commit message`, nil
 			fields: fields{
 				PreviousTagGetter: nil,
 				CommitGetter: func(name string, arg ...string) (string, error) {
-					return ``, nil
+					return emptyString, nil
 				},
 			},
 			args: args{
@@ -151,7 +153,7 @@ sha2;fix: JIR-9899 commit message`, nil
 			fields: fields{
 				PreviousTagGetter: nil,
 				CommitGetter: func(name string, arg ...string) (string, error) {
-					return ``, errors.New("err 128")
+					return emptyString, errors.New("err 128")
 				},
 			},
 			args: args{
