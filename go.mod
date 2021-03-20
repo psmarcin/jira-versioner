@@ -1,6 +1,6 @@
 module github.com/psmarcin/jira-versioner
 
-go 1.14
+go 1.16
 
 require (
 	github.com/andygrunwald/go-jira v1.13.0

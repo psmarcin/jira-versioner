@@ -9,17 +9,17 @@ import (
 	"go.uber.org/zap"
 )
 
-type MockedGit1 struct {
+type MockedGit struct {
 	mock.Mock
 }
 
-func (m *MockedGit1) GetCommits(tag, prev, gitPath string) ([]cmd.Commit, error) {
+func (m *MockedGit) GetCommits(tag, prev, gitPath string) ([]cmd.Commit, error) {
 	args := m.Called(tag, prev, gitPath)
 
 	return args.Get(0).([]cmd.Commit), args.Error(1)
 }
 
-func (m *MockedGit1) GetPreviousTag(tag, gitPath string) (string, error) {
+func (m *MockedGit) GetPreviousTag(tag, gitPath string) (string, error) {
 	args := m.Called(tag, gitPath)
 
 	return args.String(0), args.Error(1)
@@ -37,7 +37,7 @@ func TestGit_GetTasks_ReturnTaskIDsFromCommitMessage(t *testing.T) {
 		Message: "feat: epudiandae magnam explicabo laborum dolores JIR-15 epudiandae magnam explicabo laborum dolores.",
 	}
 
-	m := new(MockedGit1)
+	m := new(MockedGit)
 	m.On("GetPreviousTag", "v1.1.0", ".").Return("v1.0.0", nil)
 	m.On("GetCommits", "v1.1.0", "v1.0.0", ".").Return([]cmd.Commit{
 		firstCommit,
@@ -69,7 +69,7 @@ func TestGit_GetTasks_ReturnTaskIDsFromCommitMessageOmitCommitsWithoutTaskID(t *
 		Message: "feat: epudiandae magnam explicabo laborum dolores epudiandae magnam explicabo laborum dolores.",
 	}
 
-	m := new(MockedGit1)
+	m := new(MockedGit)
 	m.On("GetPreviousTag", "v1.1.0", ".").Return("v1.0.0", nil)
 	m.On("GetCommits", "v1.1.0", "v1.0.0", ".").Return([]cmd.Commit{
 		firstCommit,
@@ -100,7 +100,7 @@ func TestGit_GetTasks_ReturnTaskIDsFromCommitMessageOmitDuplicatedTaskIDs(t *tes
 		Message: "feat: epudiandae JIR-123 magnam explicabo laborum dolores epudiandae magnam explicabo laborum dolores.",
 	}
 
-	m := new(MockedGit1)
+	m := new(MockedGit)
 	m.On("GetPreviousTag", "v1.1.0", ".").Return("v1.0.0", nil)
 	m.On("GetCommits", "v1.1.0", "v1.0.0", ".").Return([]cmd.Commit{
 		firstCommit,
