@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/psmarcin/jira-versioner/pkg/git"
 	"github.com/psmarcin/jira-versioner/pkg/jira"
@@ -33,6 +34,7 @@ All automatically.`,
 	rootCmd.Flags().StringP("jira-token", "k", "", "Jira token/key/password")
 	rootCmd.Flags().StringP("jira-project", "p", "", "Jira project, it has to be ID, example: 10003")
 	rootCmd.Flags().StringP("jira-base-url", "u", "", "Jira service base url, example: https://example.atlassian.net")
+	rootCmd.Flags().IntP("jira-retry-times", "r", 3, "Jira retry times for HTTP requests if failed")
 	rootCmd.Flags().StringP("dir", "d", pwd, "Absolute directory path to git repository")
 	_ = rootCmd.Flags().BoolP("dry-run", "", false, "Enable dry run mode")
 
@@ -88,6 +90,13 @@ func rootFunc(c *cobra.Command, _ []string) {
 	jiraToken := c.Flag("jira-token").Value.String()
 	jiraProject := c.Flag("jira-project").Value.String()
 	jiraBaseURL := c.Flag("jira-base-url").Value.String()
+	jiraRetryTimes := c.Flag("jira-retry-times").Value.String()
+	retryTimes, err := strconv.Atoi(jiraRetryTimes)
+	if err != nil {
+		log.Errorf("[JIRA-VERSIONER] error while parsing jira-retry-times param %+v", err)
+		defer exitWithError() //nolint
+		return
+	}
 	dryRunRaw := c.Flag("dry-run").Value.String()
 	if dryRunRaw == "true" {
 		dryRun = true
@@ -97,14 +106,15 @@ func rootFunc(c *cobra.Command, _ []string) {
 	log.Debugf(
 		"[JIRA-VERSIONER] starting with parameters: %+v",
 		map[string]interface{}{
-			"jiraEmail":   jiraEmail,
-			"jiraToken":   jiraToken,
-			"jiraProject": jiraProject,
-			"jiraBaseURL": jiraBaseURL,
-			"gitDir":      gitDir,
-			"tag":         tag,
-			"version":     version,
-			"dryRun":      dryRun,
+			"jiraEmail":      jiraEmail,
+			"jiraToken":      jiraToken,
+			"jiraProject":    jiraProject,
+			"jiraBaseURL":    jiraBaseURL,
+			"jiraRetryTimes": retryTimes,
+			"gitDir":         gitDir,
+			"tag":            tag,
+			"version":        version,
+			"dryRun":         dryRun,
 		},
 	)
 	log.Infof("[JIRA-VERSIONER] git directory: %s", gitDir)
@@ -113,28 +123,39 @@ func rootFunc(c *cobra.Command, _ []string) {
 
 	tasks, err := g.GetTasks(tag)
 	if err != nil {
-		log.Fatalf("[GIT] error while getting tasks since latest commit %+v", err) // nolint
+		log.Errorf("[GIT] error while getting tasks since latest commit %+v", err)
+		defer exitWithError() //nolint
+		return
 	}
 
 	var jiraConfig = jira.Config{
-		Username:  jiraEmail,
-		Token:     jiraToken,
-		ProjectID: jiraProject,
-		BaseURL:   jiraBaseURL,
-		Log:       log,
-		DryRun:    dryRun,
+		Username:       jiraEmail,
+		Token:          jiraToken,
+		ProjectID:      jiraProject,
+		BaseURL:        jiraBaseURL,
+		Log:            log,
+		DryRun:         dryRun,
+		HTTPMaxRetries: retryTimes,
 	}
 	j, err := jira.New(&jiraConfig)
 	if err != nil {
-		log.Fatalf("[VERSION] error while connecting to jira server %+v", err)
+		log.Errorf("[VERSION] error while connecting to jira server %+v", err)
+		defer exitWithError() //nolint
+		return
 	}
 
 	_, err = j.CreateVersion(version)
 	if err != nil {
-		log.Fatalf("[VERSION] error while creating version %+v", err)
+		log.Errorf("[VERSION] error while creating version %+v", err)
+		defer exitWithError() //nolint
+		return
 	}
 
 	j.LinkTasksToVersion(tasks)
 
 	log.Infof("[JIRA-VERSIONER] done ✅")
+}
+
+func exitWithError() {
+	os.Exit(1)
 }

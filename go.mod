@@ -6,6 +6,7 @@ require (
 	github.com/andygrunwald/go-jira v1.13.0
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/hashicorp/go-retryablehttp v0.6.8 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pkg/errors v0.9.1
