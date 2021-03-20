@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
+
 	"github.com/andygrunwald/go-jira"
 	"github.com/pkg/errors"
 	pslog "github.com/psmarcin/jira-versioner/pkg/log"
@@ -35,12 +37,13 @@ type VersionID struct {
 }
 
 type Config struct {
-	Username  string
-	Token     string
-	ProjectID string
-	BaseURL   string
-	Log       pslog.Logger
-	DryRun    bool
+	Username       string
+	Token          string
+	ProjectID      string
+	BaseURL        string
+	Log            pslog.Logger
+	DryRun         bool
+	HTTPMaxRetries int
 }
 
 // New creates Jira instance with all required details like email, Token, base url
@@ -49,9 +52,18 @@ func New(config *Config) (Jira, error) {
 		log:    config.Log,
 		dryRun: config.DryRun,
 	}
+
+	// create retry client
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = config.HTTPMaxRetries
+	retryClient.CheckRetry = j.retryPolicy
+	// transform retryclient to http.Client
+	standardClient := retryClient.StandardClient()
+
 	tp := jira.BasicAuthTransport{
-		Username: config.Username,
-		Password: config.Token,
+		Username:  config.Username,
+		Password:  config.Token,
+		Transport: standardClient.Transport,
 	}
 
 	client, err := jira.NewClient(tp.Client(), config.BaseURL)
