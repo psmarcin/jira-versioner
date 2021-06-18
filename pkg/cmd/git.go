@@ -39,7 +39,7 @@ func (c Git) GetCommits(currentTag, previousTag, gitPath string) ([]Commit, erro
 	r := fmt.Sprintf("%s...%s", currentTag, previousTag)
 	c.log.Infof("[GIT] found tags: %s", r)
 
-	out, err := c.CommitGetter("git", "-C", gitPath, "log", "--pretty=format:\"%H;%s\"", "--no-notes", r)
+	out, err := c.CommitGetter("git", "-C", gitPath, "log", "--pretty=format:\"%H;%s %b\"", "--no-notes", r)
 	if err != nil {
 		return nil, err
 	}
