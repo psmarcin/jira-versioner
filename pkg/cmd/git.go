@@ -7,6 +7,8 @@ import (
 	pslog "github.com/psmarcin/jira-versioner/pkg/log"
 )
 
+const endOfCommit = "==EOC=="
+
 // Git keeps all dependency interface
 type Git struct {
 	PreviousTagGetter
@@ -39,18 +41,19 @@ func (c Git) GetCommits(currentTag, previousTag, gitPath string) ([]Commit, erro
 	r := fmt.Sprintf("%s...%s", currentTag, previousTag)
 	c.log.Infof("[GIT] found tags: %s", r)
 
-	out, err := c.CommitGetter("git", "-C", gitPath, "log", "--pretty=format:\"%H;%s %b\"", "--no-notes", r)
+	format := fmt.Sprintf(`--pretty=format:%%H;%%s %%b%s`, endOfCommit)
+	out, err := c.CommitGetter("git", "-C", gitPath, "log", format, "--no-notes", r)
 	if err != nil {
 		return nil, err
 	}
 
-	resultLines := strings.Split(out, "\n")
+	resultLines := strings.Split(out, endOfCommit)
 	for _, line := range resultLines {
 		l := strings.Split(line, ";")
 		if len(l) > 1 {
 			commits = append(commits, Commit{
-				Hash:    l[0],
-				Message: l[1],
+				Hash:    strings.ReplaceAll(l[0], "\n", ""),
+				Message: strings.ReplaceAll(l[1], "\n", " "),
 			})
 		}
 	}

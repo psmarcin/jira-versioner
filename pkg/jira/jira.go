@@ -129,11 +129,13 @@ func (j *Jira) CreateVersion(name string) (*jira.Version, error) {
 		return &jira.Version{}, err
 	}
 
+	falseBool := new(bool)
+	*falseBool = false
 	v := &jira.Version{
 		Name:        name,
 		ProjectID:   projectID,
-		Archived:    false,
-		Released:    false,
+		Archived:    falseBool,
+		Released:    falseBool,
 		StartDate:   time.Now().String(),
 		ReleaseDate: time.Now().String(),
 		// TODO: put task ids into description
